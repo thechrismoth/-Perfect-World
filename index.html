@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор Созвездий 3x3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0d1117;
+            min-height: 100vh;
+            padding: 20px;
+            color: #e6edf3;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #161b22;
+            border-radius: 6px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            border: 1px solid #30363d;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 15px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #e6edf3;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            font-size: 14px;
+            color: #7d8590;
+            line-height: 1.4;
+        }
+
+        .board-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 8px;
+            background: #010409;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+        }
+
+        .circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid #30363d;
+            user-select: none;
+        }
+
+        .circle:hover {
+            border-color: #58a6ff;
+            transform: scale(1.02);
+        }
+
+        .circle.black {
+            background: #0d1117;
+            color: #e6edf3;
+            border-color: #30363d;
+        }
+
+        .circle.white {
+            background: #e6edf3;
+            color: #0d1117;
+            border-color: #7d8590;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 15px 0;
+            padding: 12px;
+            background: #0d1117;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            color: #7d8590;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            background: #21262d;
+            color: #e6edf3;
+        }
+
+        .btn:hover {
+            background: #30363d;
+            border-color: #7d8590;
+        }
+
+        .btn-black {
+            background: #0d1117;
+            border-color: #30363d;
+        }
+
+        .btn-black:hover {
+            background: #161b22;
+            border-color: #58a6ff;
+        }
+
+        .btn-clear {
+            background: #21262d;
+        }
+
+        .btn-white {
+            background: #e6edf3;
+            color: #0d1117;
+            border-color: #7d8590;
+        }
+
+        .btn-white:hover {
+            background: #ffffff;
+            border-color: #58a6ff;
+        }
+
+        .solution {
+            margin-top: 20px;
+        }
+
+        .solution h3 {
+            margin-bottom: 10px;
+            color: #e6edf3;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .solution-box {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 120px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #7d8590;
+        }
+
+        .sequence {
+            font-weight: 600;
+            color: #58a6ff;
+            margin: 10px 0;
+            font-size: 15px;
+        }
+
+        .step {
+            margin: 5px 0;
+            padding-left: 10px;
+            border-left: 2px solid #30363d;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .circle {
+                width: 70px;
+                height: 70px;
+                font-size: 18px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Калькулятор Созвездий 3x3</h1>
+            <p class="description">
+                1. Установите текущее состояние доски из игры<br>
+                2. Нажмите кнопку для получения решения
+            </p>
+        </div>
+
+        <div class="board-container">
+            <div class="board" id="gameBoard">
+                <!-- Круги будут созданы JavaScript -->
+            </div>
+        </div>
+
+        <div class="status" id="status">
+            Текущее состояние: Все черные
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-black" id="solveBlack">Решить до ЧЕРНЫХ</button>
+            <button class="btn btn-clear" id="clearBoard">Очистить</button>
+            <button class="btn btn-white" id="solveWhite">Решить до БЕЛЫХ</button>
+        </div>
+
+        <div class="solution">
+            <h3>Решение:</h3>
+            <div class="solution-box" id="solutionText">
+                Универсальная последовательность для полной смены цвета:<br><br>
+                <span class="sequence">1 → 9 → 5 → 3 → 7</span><br><br>
+                Эта последовательность меняет все созвездия на противоположный цвет.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Модель игровой доски 3x3 (0 - черный, 1 - белый)
+        let board = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]
+        ];
+
+        // Инициализация игрового поля
+        function initializeBoard() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+            
+            // Создаем 9 кругов для игрового поля
+            for (let i = 0; i < 9; i++) {
+                const circle = document.createElement('div');
+                circle.className = 'circle black';
+                circle.textContent = i + 1;
+                circle.dataset.index = i;
+                
+                // Обработчик клика по кругу
+                circle.addEventListener('click', () => toggleCell(i));
+                
+                gameBoard.appendChild(circle);
+            }
+            
+            updateCircleColors();
+        }
+
+        // Переключение состояния клетки
+        function toggleCell(cellIndex) {
+            const row = Math.floor(cellIndex / 3);
+            const col = cellIndex % 3;
+            
+            // Инвертируем состояние клетки (0 -> 1, 1 -> 0)
+            board[row][col] = 1 - board[row][col];
+            
+            updateCircleColors();
+            updateStatus();
+        }
+
+        // Обновление цветов кругов в соответствии с состоянием доски
+        function updateCircleColors() {
+            const circles = document.querySelectorAll('.circle');
+            
+            circles.forEach((circle, index) => {
+                const row = Math.floor(index / 3);
+                const col = index % 3;
+                
+                if (board[row][col] === 1) {
+                    circle.classList.remove('black');
+                    circle.classList.add('white');
+                } else {
+                    circle.classList.remove('white');
+                    circle.classList.add('black');
+                }
+            });
+        }
+
+        // Обновление текста статуса
+        function updateStatus() {
+            const statusElement = document.getElementById('status');
+            let whiteCount = 0;
+            
+            // Подсчитываем количество белых клеток
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board[i][j] === 1) whiteCount++;
+                }
+            }
+            
+            const blackCount = 9 - whiteCount;
+            
+            if (whiteCount === 0) {
+                statusElement.textContent = "Текущее состояние: Все черные";
+            } else if (blackCount === 0) {
+                statusElement.textContent = "Текущее состояние: Все белые";
+            } else {
+                statusElement.textContent = `Текущее состояние: Белых ${whiteCount}, Черных ${blackCount}`;
+            }
+        }
+
+        // Очистка доски (все черные)
+        function clearBoard() {
+            board = [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0]
+            ];
+            
+            updateCircleColors();
+            updateStatus();
+            showUniversalSequence();
+        }
+
+        // Показать универсальную последовательность
+        function showUniversalSequence() {
+            const solutionText = document.getElementById('solutionText');
+            solutionText.innerHTML = `
+                Универсальная последовательность для полной смены цвета:<br><br>
+                <span class="sequence">1 → 9 → 5 → 3 → 7</span><br><br>
+                Эта последовательность меняет все созвездия на противоположный цвет.
+            `;
+        }
+
+        // Поиск решения для целевого цвета
+        function solveBoard(targetColor) {
+            const solutionText = document.getElementById('solutionText');
+            const currentState = JSON.parse(JSON.stringify(board)); // Глубокая копия
+            
+            // Проверка, не достигнуто ли уже целевое состояние
+            if (isBoardInState(currentState, targetColor)) {
+                const targetText = targetColor === 1 ? "БЕЛЫХ" : "ЧЕРНЫХ";
+                solutionText.innerHTML = `Доска уже состоит из ${targetText} созвездий!`;
+                return;
+            }
+            
+            // Поиск последовательности ходов
+            const solution = findSolution(currentState, targetColor);
+            
+            if (solution) {
+                const targetText = targetColor === 1 ? "БЕЛЫХ" : "ЧЕРНЫХ";
+                let solutionHTML = `
+                    Последовательность для получения ${targetText} созвездий:<br><br>
+                    <span class="sequence">${solution.join(' → ')}</span><br><br>
+                    Подробно:<br>
+                `;
+                
+                solution.forEach((step, index) => {
+                    solutionHTML += `<div class="step">${index + 1}. Нажмите на созвездие ${step}</div>`;
+                });
+                
+                solutionText.innerHTML = solutionHTML;
+            } else {
+                solutionText.innerHTML = "Решение не найдено! Попробуйте другую цель.";
+            }
+        }
+
+        // Проверка, находится ли доска в целевом состоянии
+        function isBoardInState(boardState, targetColor) {
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (boardState[i][j] !== targetColor) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // Поиск минимальной последовательности ходов
+        function findSolution(initialBoard, targetColor) {
+            // Перебираем все возможные комбинации ходов от 1 до 9
+            for (let moves = 1; moves <= 9; moves++) {
+                const sequences = generateCombinations(9, moves);
+                
+                for (const sequence of sequences) {
+                    const testBoard = JSON.parse(JSON.stringify(initialBoard));
+                    
+                    // Применяем последовательность ходов к тестовой доске
+                    for (const move of sequence) {
+                        applyGameMove(testBoard, move);
+                    }
+                    
+                    // Проверяем, достигнута ли цель
+                    if (isBoardInState(testBoard, targetColor)) {
+                        return sequence.map(move => move + 1); // Возвращаем номера созвездий (1-9)
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        // Генерация всех комбинаций длины k из n элементов
+        function generateCombinations(n, k) {
+            const result = [];
+            
+            function backtrack(start, current) {
+                if (current.length === k) {
+                    result.push([...current]);
+                    return;
+                }
+                
+                for (let i = start; i < n; i++) {
+                    current.push(i);
+                    backtrack(i + 1, current);
+                    current.pop();
+                }
+            }
+            
+            backtrack(0, []);
+            return result;
+        }
+
+        // Применение хода к доске
+        function applyGameMove(boardState, cellIndex) {
+            const row = Math.floor(cellIndex / 3);
+            const col = cellIndex % 3;
+            
+            // Инвертируем выбранную клетку
+            boardState[row][col] = 1 - boardState[row][col];
+            
+            // Инвертируем соседние клетки (верх, право, низ, лево)
+            const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+            
+            for (const [dr, dc] of directions) {
+                const newRow = row + dr;
+                const newCol = col + dc;
+                
+                if (newRow >= 0 && newRow < 3 && newCol >= 0 && newCol < 3) {
+                    boardState[newRow][newCol] = 1 - boardState[newRow][newCol];
+                }
+            }
+            
+            return boardState;
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeBoard();
+            
+            // Назначение обработчиков для кнопок
+            document.getElementById('solveBlack').addEventListener('click', () => solveBoard(0));
+            document.getElementById('solveWhite').addEventListener('click', () => solveBoard(1));
+            document.getElementById('clearBoard').addEventListener('click', clearBoard);
+        });
+    </script>
+</body>
+</html>
